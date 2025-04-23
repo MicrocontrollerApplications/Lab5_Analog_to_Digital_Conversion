@@ -1,5 +1,5 @@
 # Lab5_Analog_to_Digital_Conversion
-In today's laboratory we will check out the Analog to Digital Conversion (ADC) module. Therefore, we will first configure our ADC-module so that it uses the potentiometer of our development board as an input and print its current voltage level on the display. Afterward, we will automatize the conversion to be done frequently in order to get updates of the voltage level automnatically. Last but not least, we will use our LEDs to show how many quarters of our reference voltage are currently measured by the ADC, like a battery level indicator.
+In today's laboratory we will check out the Analog to Digital Conversion (ADC) module. Therefore, we will first configure our ADC-module so that it uses the potentiometer of our development board as an input and print its current voltage level on the display. We will then automate the conversion so that it is performed at regular intervals to automatically receive voltage level updates. Last but not least, we will use our LEDs to show how many quarters of our reference voltage are currently measured by the ADC, like a battery level indicator.
 
 The experts among you will get a simple exercise, a binary counter based on the ADC. But is it really simple, or is there a hidden trap?
 
@@ -58,6 +58,7 @@ of all relevant registers for today.
 <tr><th align="left">PIR</th><td>contains the flags for peripheral interrupts</td></tr>
 <tr><th align="left">PIE</th><td>contains the individual enable bits for the peripheral interrupts</td></tr>
 </table>
+</details>
 
 <details>
 <summary><strong>Analogt / Digital Conversion</strong></summary>
@@ -67,3 +68,27 @@ of all relevant registers for today.
 <tr><th align="left">ADCON2</th><td>Configure justification of conversion result, Acquisition time, and conversion clock. </td></tr>
 <tr><th align="left">ADRES</th><td>Read conversion result as 16 bit value. Use ADRESH and ADRESL to read result as two 8 bit values.</td></tr>
 </table>
+</details>
+
+## Relevant chapters of the datasheet
+We will use many of the available modules of our microcontroller today. Thus, the relevant chapters of the datasheet 
+for today's laboratory are listed below.
+- 2.0 OSCILLATOR MODULE (WITH FAIL-SAFE CLOCK MONITOR)
+- 9.0 INTERRUPTS
+- 10.0 I/O PORTS
+- 12.0 TIMER1/3/5 MODULE WITH GATE CONTROL
+- 14.0 CAPTURE/COMPARE/PWM MODULES
+- 17.0 ANALOG-TO-DIGITAL CONVERTER (ADC) MODULE
+
+## Exercise 1 - Configuring the ADC
+As told in the lecture, you need to configure the ADC-modules timings; $T_{AD}$ sets the time each processing step of the ADC-module consumes (tipically set to 2µs). $T_{ACQ}$ defines the time used to load the capacitor. An exemplary calculation for thi timing is shown in Equation 17-1 in the datasheet. Look at the equation, understand it and use the given $T_{ACQ}$ for your configuration.
+The procedure to convert an analog input into a digital value is explained in chapter 17.2.10 of the datasheet. You will find comments in the given main.c showing you where to implement those steps. Follow the instruction from the datasheet and configure your ADC.
+
+> [!NOTE]
+> You need to know the Osciallators frequency to determine the clock selection setting for the ADC, make sure to check configuration of the oscillator before configuring ADC-module's clock selection. Additionaly, keep in mind that $2\,\mu s$ is a good value for $T_{AD}$.
+
+
+## Exercise 2 - Automatize conversion
+
+
+## Exercise 3 - Battery Level indicator
