@@ -80,15 +80,111 @@ for today's laboratory are listed below.
 - 14.0 CAPTURE/COMPARE/PWM MODULES
 - 17.0 ANALOG-TO-DIGITAL CONVERTER (ADC) MODULE
 
-## Exercise 1 - Configuring the ADC
-As told in the lecture, you need to configure the ADC-modules timings; $T_{AD}$ sets the time each processing step of the ADC-module consumes (tipically set to 2µs). $T_{ACQ}$ defines the time used to load the capacitor. An exemplary calculation for thi timing is shown in Equation 17-1 in the datasheet. Look at the equation, understand it and use the given $T_{ACQ}$ for your configuration.
-The procedure to convert an analog input into a digital value is explained in chapter 17.2.10 of the datasheet. You will find comments in the given main.c showing you where to implement those steps. Follow the instruction from the datasheet and configure your ADC.
+## Exercise 1 - Enable Measurement of potentiometer
+Like in the laboratory sessions before, please clone this repository and open the project in MPLAB.
+
+### Exercise 1.a - Configure the ADC
+As told in the lecture, you need to configure the ADC-modules timings. $T_{AD}$ sets the time each processing step of the ADC-module consumes (typically set to 2µs). $T_{ACQ}$ defines the time used to load the capacitor. An exemplary calculation for this timing is shown in Equation 17-1 in the datasheet. Look at the equation, understand it and use the given $T_{ACQ}$ for your configuration.
+The procedure to convert an analog input into a digital value is explained in chapter 17.2.10. The following shortened version gives you a guideline to configure the ADC-modules for today's needs.
+>1. Configure Port (look at the schematic, section Analg I/O, look for a pin connected directly to the potentiometer):
+>	- Disable pin output driver (See TRIS register)
+>	- Configure pin as analog
 
 > [!NOTE]
-> You need to know the Osciallators frequency to determine the clock selection setting for the ADC, make sure to check configuration of the oscillator before configuring ADC-module's clock selection. Additionaly, keep in mind that $2\,\mu s$ is a good value for $T_{AD}$.
+> You need to know the Oscillators frequency to determine the clock selection setting for the ADC, make sure to check configuration of the oscillator before configuring ADC-module's clock selection. Additionally, keep in mind that $2\,\mu s$ is a good value for $T_{AD}$
 
+>2. Configure the ADC module:
+>	- Select ADC conversion clock
+>	- Configure voltage reference
+>	- Select ADC input channel
+>	- Select result format
+>	- Select acquisition delay
+>	- Turn on ADC module
+>3. Start conversion by setting the GO/DONE bit. **Do this in main**
+>4. Wait for ADC conversion to complete by one of
+>the following:
+>    - Polling the GO/DONE bit
+>    - Waiting for the ADC interrupt (we'll do this later) 
+>5. Read ADC Result from ADRESH and ADRESL
+
+You will find comments, such as below example, in the given main.c showing you where to implement those steps. Follow the instruction from the datasheet and configure your ADC.
+```C
+/*
+ * ADC Conversion - Step 1: Configure Port
+ */
+```
+
+### Exercise 1.b  - View Measurement on Display
+To check if your configuration is valid, we will implement a function to convert the ADRES register into a voltage level (given in mV) and show it on our display.
+To do this, the following function (line 15) must be implemented in such a way that it returns the voltage level.
+```C
+void ADRES_to_mV(unsigned int register_val){
+	// calculate measured voltage from register_val
+	
+}
+```
+Remember, ADRES gives you the relative voltage compared to the set reference voltage. Due to the 10 bits of our ADC, ADRES will be in the range from 0 to 1023. And thus you can calculate the "percentage of the reference" using ADRES. This "percentage of the reference" then be used to calculate the measured voltage level.
+$$V_{measured} = a * \frac{d}{c}$$
+You need to find out a, d, and c.
 
 ## Exercise 2 - Automatize conversion
+To enhance our code, we want to get rid of the time wasting for loop. Therefore, we will use an already known approach - Interrupts!
+To do so we need to do the following:
+1. Configure Timer 1 so that it can be used to realize measurement frequencies up to 10 Hz.
+2. Check the CCP modules documentation. There is one instance of that module that offers a special functionality for the ADC module. Find out which one it is and configure it so that the analog to digital conversion is done every 100ms. <br> <span style="color: rgb(200,0,0)">**Look at the CCP modules compare mode. Read this chapter carefully, to find the correct CCP instance!**</span>
+3. Implement the interrupt service routine.
+4. Modify the main program to not modify and poll ADCON0bits.GO anymore.
+5. Let a LED blink to have a visual update indicator.
 
+>[!NOTE]
+>When done correctly, you don't need to start the Analog to Digital Conversion on the CCP interrupt. Nevertheless, you need to ensure, that the CCP interrupt is handled only once - keep in mind the interrupt flag!
 
 ## Exercise 3 - Battery Level indicator
+A common use case for that an ADC is used is the monitoring of a battery. For this purpose, the battery's remaining voltage is measured in regular intervals.
+Let's use our potentiometer to simulate different battery levels (e.g. 25, 50, 75, and 100%) and realize a battery level indicator using the four LEDs. To do this we need to configure the relevant pins, in order to be able to turn the LEDs on and off.
+Furthermore, we need to check the voltage level within our main program (not only print it to the display) and test how many percent of our reference voltage is given by the potentiometer.
+See below table for a clarification.
+
+| Voltage | Percentage | LED1  | LED2  | LED3  | LED4  |
+| ---:    | ---:       | :---: | :---: | :---: | :---: |
+| 320.86  | 9.8%       | ${\bullet}$ | ${\bullet}$ | ${\bullet}$ | ${\bullet}$ |
+| 956.25  | 29.4%      | ${\bullet}$ | ${\bullet}$ | ${\bullet}$ | ${\color{red}\bullet}$ |
+| 2227.00 | 68.5%      | ${\bullet}$ | ${\bullet}$ | ${\color{red}\bullet}$ | ${\color{red}\bullet}$ |
+| 3250.00 | 100%       | ${\color{red}\bullet}$ | ${\color{red}\bullet}$ |${\color{red}\bullet}$ | ${\color{red}\bullet}$ |
+
+As we already measure our voltage level regularly, the only thing that needs to be done is adding the necessary logic to control the LEDs.
+>[!TIP]
+>Don't try to solve this with a fancy solution. Keep it simple and remember basic commands such as if-else-statements and the possibility to store values inside a variable.
+
+## Exercise 4 - Rolling LEDs (Experts only, not part of voting)
+For this exercise, you need to analyze the direction of rotation of the potentiometer. Depending on this direction, you should switch through the LEDs to display the direction of rotation with the movement of the LED within the LED strip.
+Below tables show the LEDs behavior for both directions of rotation. 
+
+**Clockwise rotation of potentiometer**
+
+| LED1  | LED2  | LED3  | LED4  |
+| :---: | :---: | :---: | :---: |
+| ${\bullet}$ | ${\bullet}$ | ${\color{red}\bullet}$ | ${\bullet}$ |
+| ${\bullet}$ | ${\bullet}$ | ${\bullet}$ | ${\color{red}\bullet}$ |
+| ${\color{red}\bullet}$ | ${\bullet}$ | ${\bullet}$ | ${\bullet}$ |
+| ${\bullet}$ | ${\color{red}\bullet}$ | ${\bullet}$ | ${\bullet}$ |
+| ${\bullet}$ | ${\bullet}$ | ${\color{red}\bullet}$ | ${\bullet}$ |
+
+**Counterclockwise rotation of potentiometer**
+
+| LED1  | LED2  | LED3  | LED4  |
+| :---: | :---: | :---: | :---: |
+| ${\bullet}$ | ${\bullet}$ | ${\color{red}\bullet}$ | ${\bullet}$ |
+| ${\bullet}$ | ${\color{red}\bullet}$ | ${\bullet}$ | ${\bullet}$ |
+| ${\color{red}\bullet}$ | ${\bullet}$ | ${\bullet}$ | ${\bullet}$ |
+| ${\bullet}$ | ${\bullet}$ | ${\bullet}$ | ${\color{red}\bullet}$ |
+| ${\bullet}$ | ${\bullet}$ | ${\color{red}\bullet}$ | ${\bullet}$ |
+
+>[!TIP]
+>Remember that C offers you the possibility to shift a register using the *Bitwise Rightshift* (>>) or *Bitwise Leftshift* (<<) operators.
+>Furthermore, keep in mind that our LEDs are connected with an inverted logic and that there is a *Bitwise Operator* that can be used to invert (1->0, 0->1) dedicated bits.
+
+When you're done with implementing this functionality, answer yourself the following questions:
+- what's a potential use case for this functionality?
+- is there a speed limit for the potentiometer's rotation that ensures intermediate states (i.e. different form 0% and 100% turned) are still detected?
+- what are your options to either speed up or slow down the movement of the LED?
