@@ -120,7 +120,8 @@ To do this, the following function (line 15) must be implemented in such a way t
 ```C
 void ADRES_to_mV(unsigned int register_val){
 	// calculate measured voltage from register_val
-	
+
+	return 9999;
 }
 ```
 Remember, ADRES gives you the relative voltage compared to the set reference voltage. Due to the 10 bits of our ADC, ADRES will be in the range from 0 to 1023. And thus you can calculate the "percentage of the reference" using ADRES. This "percentage of the reference" then be used to calculate the measured voltage level.
