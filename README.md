@@ -118,7 +118,7 @@ You will find comments, such as below example, in the given main.c showing you w
 To check if your configuration is valid, we will implement a function to convert the ADRES register into a voltage level (given in mV) and show it on our display.
 To do this, the following function (line 15) must be implemented in such a way that it returns the voltage level.
 ```C
-void ADRES_to_mV(unsigned int register_val){
+uint16_t ADRES_to_mV(uint16_t register_val){
 	// calculate measured voltage from register_val
 
 	return 9999;
